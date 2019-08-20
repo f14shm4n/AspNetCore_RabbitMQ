@@ -3,34 +3,70 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Service_1
 {
     public class Program
     {
+        public static readonly string AppName = "Service_1";
+
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var config = GetConfiguration();
+
+            Log.Logger = CreateSeriloggger(config);
+
+            try
+            {
+                Log.Information("Configuring web host ({ApplicationContext})...", AppName);
+                var host = CreateHostBuilder(config, args).Build();
+
+                Log.Information("Starting web host ({ApplicationContext})...", AppName);
+                host.Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Program terminated unexpectedly ({ApplicationContext})!", AppName);
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
+        private static Serilog.ILogger CreateSeriloggger(IConfiguration configuration)
         {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(config =>
-                {
-                    config
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("hostsettings.json", optional: true, reloadOnChange: true);
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+            return new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .Enrich.FromLogContext()
+                .WriteTo.Debug()
+                .WriteTo.Console()
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
         }
 
+        public static IWebHostBuilder CreateHostBuilder(IConfiguration configuration, string[] args)
+        {         
+            return WebHost
+                .CreateDefaultBuilder(args)
+                .UseConfiguration(configuration)
+                .UseSerilog()
+                .UseStartup<Startup>();
+        }
+
+        private static IConfiguration GetConfiguration()
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables();
+            return builder.Build();
+        }
     }
 }

@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IntEvents;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SignalR;
 
 namespace Service_2
 {
@@ -22,6 +24,14 @@ namespace Service_2
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR()
+                .AddJsonProtocol(opts =>
+                {
+                    opts.PayloadSerializerOptions.WriteIndented = true;
+                });
+
+            services.AddSingleton<IEventBus, EventBus>();
+
             services.AddControllersWithViews();
         }
 
@@ -48,7 +58,10 @@ namespace Service_2
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHub<RabbitMqHub>("/signalr/hubs/rabbit-mq");
             });
+
+            app.ApplicationServices.GetRequiredService<IEventBus>().Subscribe();
         }
     }
 }

@@ -2,7 +2,53 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row">
+    <!-- Buttons and Textboxes -->
+    <div class="col-6">
+        <textarea id="message_input" class="form-control" rows="4" placeholder="Enter your text here which will be published as RabbitMQ message."></textarea>
+        <button id="publish_event" class="btn btn-secondary mt-1">Publish event</button>
+    </div>
+    <!-- Log view -->
+    <div class="col-6">
+        <div class="card">
+            <div id="log_out" class="card-body">
+
+            </div>
+        </div>
+    </div>
 </div>
+
+@section scripts{
+    <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            var connection = new signalR.HubConnectionBuilder().withUrl("/signalr/hubs/rabbit-mq").build();
+
+            //Disable send button until connection is established
+            $("#publish_event")
+                .addClass("disabled")
+                .attr("disabled", true);
+
+            connection.on("ReceiveLog", function (message) {
+                let logItem = $("<div>").html(message);
+                $("#log_out").append(logItem);
+            });
+
+            connection.start().then(function () {
+                $("#publish_event")
+                    .removeClass("disabled")
+                    .attr("disabled", false);
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            $("#publish_event").click(e => {
+                let message = $("#message_input").val();
+                connection.invoke("CreateEvent", message).catch(function (err) {
+                    return console.error(err.toString());
+                });
+                e.preventDefault();
+            });
+        });
+    </script>
+}

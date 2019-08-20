@@ -2,7 +2,33 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row">
+    <!-- Log view -->
+    <div class="col-12">
+        <div class="card">
+            <div id="log_out" class="card-body">
+
+            </div>
+        </div>
+    </div>
 </div>
+
+@section scripts{
+    <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            var connection = new signalR.HubConnectionBuilder().withUrl("/signalr/hubs/rabbit-mq").build();
+
+            connection.on("ReceiveLog", function (message) {
+                let logItem = $("<div>").html(message);
+                $("#log_out").append(logItem);
+            });
+
+            connection.start().then(function () {
+
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+        });
+    </script>
+}
