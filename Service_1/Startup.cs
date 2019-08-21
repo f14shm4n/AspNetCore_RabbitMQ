@@ -30,7 +30,7 @@ namespace Service_1
                     opts.PayloadSerializerOptions.WriteIndented = true;
                 });
 
-            services.AddSingleton<IEventBus, EventBus>();
+            services.AddSingleton<IRabbitMQEventBus, RabbitMQEventBus>();
 
             services
                 .AddControllersWithViews()

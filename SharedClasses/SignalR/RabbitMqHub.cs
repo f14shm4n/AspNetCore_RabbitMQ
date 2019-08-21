@@ -15,9 +15,9 @@ namespace SignalR
     {
         public const string ReceiveLog = "ReceiveLog";
 
-        private readonly IEventBus _eventBus;
+        private readonly IRabbitMQEventBus _eventBus;
 
-        public RabbitMqHub(IEventBus eventBus)
+        public RabbitMqHub(IRabbitMQEventBus eventBus)
         {
             _eventBus = eventBus;
         }

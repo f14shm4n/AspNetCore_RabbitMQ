@@ -30,7 +30,7 @@ namespace Service_2
                     opts.PayloadSerializerOptions.WriteIndented = true;
                 });
 
-            services.AddSingleton<IEventBus, EventBus>();
+            services.AddSingleton<IRabbitMQEventBus, RabbitMQEventBus>();
 
             services.AddControllersWithViews();
         }
@@ -60,8 +60,8 @@ namespace Service_2
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapHub<RabbitMqHub>("/signalr/hubs/rabbit-mq");
             });
-
-            app.ApplicationServices.GetRequiredService<IEventBus>().Subscribe();
+            // Subscribe to events from another service
+            app.ApplicationServices.GetRequiredService<IRabbitMQEventBus>().Subscribe();
         }
     }
 }

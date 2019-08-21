@@ -12,32 +12,36 @@ using System.Text.Json;
 
 namespace IntEvents
 {
-    public interface IEventBus
+    // Event bus interface
+    public interface IRabbitMQEventBus
     {
         void PublishMessage(string description);
         void Subscribe();
     }
-
-    public class EventBus : IEventBus, IDisposable
+    // Event bus impl
+    public class RabbitMQEventBus : IRabbitMQEventBus, IDisposable
     {
         private readonly IConfiguration _configuration;
-        private readonly IServiceProvider _services;
+        private readonly IHubContext<RabbitMqHub> _hubContext;
 
         private IConnection _consumerConnection;
         private IModel _consumerChannel;
 
-        public EventBus(IConfiguration configuration, IServiceProvider services)
+        public RabbitMQEventBus(IConfiguration configuration, IHubContext<RabbitMqHub> hubContext)
         {
             _configuration = configuration;
-            _services = services;
+            _hubContext = hubContext;
         }
 
         public void Dispose()
         {
-            Log.Debug("Event bus disposed");
             if (_consumerChannel != null)
             {
                 _consumerChannel.Dispose();
+            }
+
+            if (_consumerConnection != null)
+            {
                 _consumerConnection.Dispose();
             }
         }
@@ -59,9 +63,9 @@ namespace IntEvents
                     From = _configuration["ServiceName"],
                     Description = description
                 };
-                // Serialize
+                // Serialize event data
                 var json = JsonSerializer.Serialize(eventData);
-
+                // Print to debug
                 Log.Debug($"Serialized data: [{json}]");
 
                 var body = Encoding.UTF8.GetBytes(json);
@@ -75,12 +79,9 @@ namespace IntEvents
 
         public void Subscribe()
         {
-            Log.Debug("Subscribed.");
-
             var factory = new ConnectionFactory() { HostName = "localhost" };
             _consumerConnection = factory.CreateConnection();
             _consumerChannel = _consumerConnection.CreateModel();
-
             _consumerChannel.QueueDeclare(queue: _configuration["ReceiveQueue"],
                                  durable: false,
                                  exclusive: false,
@@ -91,14 +92,14 @@ namespace IntEvents
             consumer.Received += async (model, ea) =>
             {
                 var body = ea.Body;
+                // Get our json event data
                 var json = Encoding.UTF8.GetString(body);
-
+                // Print data to debug
                 Log.Debug($"Received message: [{json}].");
-
+                // Deserialize json
                 var eventData = JsonSerializer.Deserialize<SampleEvent>(json);
-
-                var hubContext = _services.GetService<IHubContext<RabbitMqHub>>();
-                await hubContext.SendLogAsync($"Event received from [{eventData.From}] at [{eventData.Timestamp}] with content [{eventData.Description}].");
+                // Notify SignalR clients
+                await _hubContext.SendLogAsync($"Event received from [{eventData.From}] at [{eventData.Timestamp}] with content [{eventData.Description}].");
             };
             _consumerChannel.BasicConsume(queue: _configuration["ReceiveQueue"],
                                  autoAck: true,
