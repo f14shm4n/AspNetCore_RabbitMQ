@@ -1,6 +1,6 @@
 # ASP.NET Core & RabbitMQ Sample
 
-Yes, yes, this is another example where the [basic guide](#https://www.rabbitmq.com/tutorials/tutorial-one-dotnet.html) from the official RabbitMQ website is used.
+Yes, yes, this is another example where the [basic guide](https://www.rabbitmq.com/tutorials/tutorial-one-dotnet.html) from the official RabbitMQ website is used.
 
 The original guide contains two console apps to demonstrate the basic functions.
 
@@ -8,9 +8,9 @@ In this sample, I created two Asp.Net Core 3.0 projects as two microservices (SO
 
 ## Requirements
 
-- [Visual Studio 2019](#https://visualstudio.microsoft.com/ru/vs/)
-- [RabbitMQ server](#https://www.rabbitmq.com/download.html)
-- [.Net Core 3.0 SDK](#https://dotnet.microsoft.com/download/dotnet-core/3.0)
+- [Visual Studio 2019](https://visualstudio.microsoft.com/ru/vs/)
+- [RabbitMQ server](https://www.rabbitmq.com/download.html)
+- [.Net Core 3.0 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.0)
 
 ## How it works
 
@@ -43,7 +43,7 @@ and next for second when message is received:
 
 This is simplest version of using RabbitMQ message broker in a typical SOA project which you can easily download, compile, run and see the results and roughly imagine how it can be done in real project.
 
-In fact, I created a simplest version of [this project](#https://github.com/dotnet-architecture/eShopOnContainers). I implemented only event bus which should demostrate the RabbitMQ functionality.
+In fact, I created a simplest version of [this project](https://github.com/dotnet-architecture/eShopOnContainers). I implemented only event bus which should demostrate the RabbitMQ functionality.
 
 ## Disclaimer
 
