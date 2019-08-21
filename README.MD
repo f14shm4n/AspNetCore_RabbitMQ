@@ -51,4 +51,4 @@ Provided code in this repository does not pretend to absolutely ideal of code wr
 
 ## License
 
-[MIT](#https://github.com1/f14shm4n/AspNetCore_RabbitMQ/blob/master/LICENSE.md)
+[MIT](https://github.com/f14shm4n/AspNetCore_RabbitMQ/blob/master/LICENSE.md)
